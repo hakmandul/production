@@ -1,10 +1,22 @@
+// middleware/auth.ts
 import { authClient } from "~/lib/auth-client";
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
-    // Используем getSession вместо useSession внутри middleware для надежности
-    const { data: session } = await authClient.getSession();
+    // 1. Принудительно запрашиваем сессию с сервера
+    // Мы используем await, чтобы Nuxt ЖДАЛ ответа, прежде чем рисовать страницу
+    const { data } = await authClient.getSession({
+        fetchOptions: {
+            headers: {
+                // Важно: запрещаем кеширование, чтобы браузер не вернул старое "null"
+                'Cache-Control': 'no-cache' 
+            }
+        }
+    });
 
-    if (!session) {
+    // 2. Если сервер ответил "null" (нет данных) — выгоняем на логин
+    if (!data) {
         return navigateTo('/login');
     }
+
+    // 3. Если данные есть — пускаем дальше
 });

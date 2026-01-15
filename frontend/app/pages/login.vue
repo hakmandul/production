@@ -86,7 +86,7 @@ const handleLogin = async () => {
     console.log("Сессия обновлена. Переходим в профиль...");
     
     // 4. Делаем редирект
-    await router.push('/profile');
+    await router.push('/check');
 
   } catch (e) {
     console.error("Неожиданная ошибка:", e);
