@@ -1,12 +1,10 @@
-// middleware/auth.ts
 import { authClient } from "~/lib/auth-client";
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
-    // Используем useFetch для SSR-совместимой проверки сессии
-    const { data: session } = await authClient.useSession(useFetch);
+    // Используем getSession вместо useSession внутри middleware для надежности
+    const { data: session } = await authClient.getSession();
 
-    // Если сессии нет, отправляем на логин
-    if (!session.value) {
+    if (!session) {
         return navigateTo('/login');
     }
 });

@@ -60,16 +60,39 @@ const handleLogin = async () => {
   isLoading.value = true;
   error.value = null;
 
-  const { error: authError } = await authClient.signIn.email({
-    email: email.value,
-    password: password.value,
-  });
+  try {
+    // 1. Отправляем запрос на вход
+    const { error: authError } = await authClient.signIn.email({
+      email: email.value,
+      password: password.value,
+    });
 
-  if (authError) {
-    error.value = authError.message || 'Неверный логин или пароль';
+    if (authError) {
+      console.error("Ошибка входа:", authError);
+      error.value = authError.message || 'Неверный логин или пароль';
+      isLoading.value = false;
+      return;
+    }
+
+    // 2. Вход успешен (сервер ответил 200)
+    console.log("Вход успешен. Обновляем сессию...");
+
+    // 3. КРИТИЧЕСКИЙ МОМЕНТ:
+    // Принудительно запрашиваем сессию, чтобы клиент Nuxt понял, что мы вошли
+    await authClient.getSession({
+      fetchOptions: { headers: { 'Cache-Control': 'no-cache' } }
+    });
+
+    console.log("Сессия обновлена. Переходим в профиль...");
+    
+    // 4. Делаем редирект
+    await router.push('/profile');
+
+  } catch (e) {
+    console.error("Неожиданная ошибка:", e);
+    error.value = "Произошла ошибка при обработке входа";
+  } finally {
     isLoading.value = false;
-  } else {
-    router.push('/profile');
   }
 };
 </script>
