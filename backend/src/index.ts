@@ -1,9 +1,12 @@
 // src/index.ts
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { logger } from "hono/logger"; // <--- 1. Импорт
 import { auth } from "./lib/auth"; // Ваш файл auth.ts
 
 const app = new Hono();
+app.use(logger()); 
+
 
 // ==========================================
 // 1. CORS CONFIGURATION
