@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { authClient } from '~/lib/auth-client'
+import { useUser } from './composables/useUser'
 
 const user = useUser()
 
