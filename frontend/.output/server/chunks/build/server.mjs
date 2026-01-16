@@ -1,12 +1,10 @@
-import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};import { computed, toValue, reactive, getCurrentInstance, onServerPrefetch, hasInjectionContext, ref, shallowRef, toRef, nextTick, unref, defineComponent, createElementBlock, provide, cloneVNode, h, inject, Suspense, Fragment, createApp, shallowReactive, onErrorCaptured, createVNode, resolveDynamicComponent, effectScope, isReadonly, isRef, isShallow, isReactive, toRaw, defineAsyncComponent, mergeProps, getCurrentScope, useSSRContext } from 'vue';
+import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};import { hasInjectionContext, getCurrentInstance, defineComponent, h, defineAsyncComponent, inject, computed, unref, shallowRef, provide, shallowReactive, ref, Suspense, Fragment, createApp, toRef, onErrorCaptured, onServerPrefetch, createVNode, resolveDynamicComponent, reactive, effectScope, isReadonly, isRef, isShallow, isReactive, toRaw, mergeProps, getCurrentScope, withCtx, nextTick, useSSRContext } from 'vue';
 import http from 'node:http';
 import https from 'node:https';
-import { i as createFetch, k as hash, l as getRequestHeaders, m as hasProtocol, n as isScriptProtocol, o as joinURL, w as withQuery, s as sanitizeStatusCode, p as getContext, c as createError$1, q as createHooks, r as executeAsync, t as toRouteMatcher, v as createRouter$1, x as defu } from '../../index.mjs';
+import { i as createFetch, k as getRequestHeaders, c as createError$1, l as hasProtocol, m as isScriptProtocol, n as joinURL, w as withQuery, s as sanitizeStatusCode, o as getContext, p as createHooks, q as executeAsync, t as toRouteMatcher, r as createRouter$1, v as defu } from '../../index.mjs';
 import { b as baseURL } from '../routes/renderer.mjs';
-import { RouterView, createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
+import { useRoute as useRoute$1, RouterView, createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
 import { createAuthClient } from 'better-auth/vue';
-import { isPlainObject } from '@vue/shared';
-import { debounce } from 'perfect-debounce';
 import { ssrRenderSuspense, ssrRenderComponent, ssrRenderVNode, ssrRenderAttrs } from 'vue/server-renderer';
 import 'node:events';
 import 'node:buffer';
@@ -40,8 +38,8 @@ function createNodeFetch() {
 }
 const fetch = globalThis.fetch ? (...args) => globalThis.fetch(...args) : createNodeFetch();
 const Headers = globalThis.Headers || s;
-const AbortController$1 = globalThis.AbortController || i;
-const ofetch = createFetch({ fetch, Headers, AbortController: AbortController$1 });
+const AbortController = globalThis.AbortController || i;
+const ofetch = createFetch({ fetch, Headers, AbortController });
 const $fetch = ofetch;
 
 if (!globalThis.$fetch) {
@@ -52,6 +50,7 @@ if (!globalThis.$fetch) {
 if (!("global" in globalThis)) {
   globalThis.global = globalThis;
 }
+const appLayoutTransition = false;
 const nuxtLinkDefaults = { "componentName": "NuxtLink" };
 const asyncDataDefaults = { "deep": false };
 const fetchDefaults = {};
@@ -444,12 +443,44 @@ function useRequestHeaders(include) {
 function useRequestFetch() {
   return useRequestEvent()?.$fetch || globalThis.$fetch;
 }
-defineComponent({
-  name: "ServerPlaceholder",
-  render() {
-    return createElementBlock("div");
+const __nuxt_page_meta = {
+  // Если у тебя layout называется 'default', эту строку можно даже не писать,
+  // Nuxt подставит его сам. Но для ясности оставим.
+  layout: "default",
+  middleware: async () => {
+    let __temp, __restore;
+    const { data } = ([__temp, __restore] = executeAsync(() => authClient.getSession({
+      fetchOptions: { headers: useRequestHeaders(["cookie"]) }
+    })), __temp = await __temp, __restore(), __temp);
+    if (!data) return navigateTo("/login");
   }
-});
+};
+const _routes = [
+  {
+    name: "index",
+    path: "/",
+    component: () => import('./index-BwBGxOqy.mjs')
+  },
+  {
+    name: "login",
+    path: "/login",
+    component: () => import('./login-DFGxMa5H.mjs')
+  },
+  {
+    name: "profile",
+    path: "/profile",
+    meta: __nuxt_page_meta || {},
+    component: () => import('./profile-BbeDwCcZ.mjs')
+  },
+  {
+    name: "register",
+    path: "/register",
+    component: () => import('./register-DaeaA223.mjs')
+  }
+];
+const _wrapInTransition = (props, children) => {
+  return { default: () => children.default?.() };
+};
 const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g;
 const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g;
 const ROUTE_KEY_NORMAL_RE = /:\w+/g;
@@ -472,440 +503,6 @@ function isChangingPage(to, from) {
   }
   return true;
 }
-const clientOnlySymbol = /* @__PURE__ */ Symbol.for("nuxt:client-only");
-defineComponent({
-  name: "ClientOnly",
-  inheritAttrs: false,
-  props: ["fallback", "placeholder", "placeholderTag", "fallbackTag"],
-  ...false,
-  setup(props, { slots, attrs }) {
-    const mounted = shallowRef(false);
-    const vm = getCurrentInstance();
-    if (vm) {
-      vm._nuxtClientOnly = true;
-    }
-    provide(clientOnlySymbol, true);
-    return () => {
-      if (mounted.value) {
-        const vnodes = slots.default?.();
-        if (vnodes && vnodes.length === 1) {
-          return [cloneVNode(vnodes[0], attrs)];
-        }
-        return vnodes;
-      }
-      const slot = slots.fallback || slots.placeholder;
-      if (slot) {
-        return h(slot);
-      }
-      const fallbackStr = props.fallback || props.placeholder || "";
-      const fallbackTag = props.fallbackTag || props.placeholderTag || "span";
-      return createElementBlock(fallbackTag, attrs, fallbackStr);
-    };
-  }
-});
-function useAsyncData(...args) {
-  const autoKey = typeof args[args.length - 1] === "string" ? args.pop() : void 0;
-  if (_isAutoKeyNeeded(args[0], args[1])) {
-    args.unshift(autoKey);
-  }
-  let [_key, _handler, options = {}] = args;
-  const key = computed(() => toValue(_key));
-  if (typeof key.value !== "string") {
-    throw new TypeError("[nuxt] [useAsyncData] key must be a string.");
-  }
-  if (typeof _handler !== "function") {
-    throw new TypeError("[nuxt] [useAsyncData] handler must be a function.");
-  }
-  const nuxtApp = useNuxtApp();
-  options.server ??= true;
-  options.default ??= getDefault;
-  options.getCachedData ??= getDefaultCachedData;
-  options.lazy ??= false;
-  options.immediate ??= true;
-  options.deep ??= asyncDataDefaults.deep;
-  options.dedupe ??= "cancel";
-  options._functionName || "useAsyncData";
-  nuxtApp._asyncData[key.value];
-  function createInitialFetch() {
-    const initialFetchOptions = { cause: "initial", dedupe: options.dedupe };
-    if (!nuxtApp._asyncData[key.value]?._init) {
-      initialFetchOptions.cachedData = options.getCachedData(key.value, nuxtApp, { cause: "initial" });
-      nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData);
-    }
-    return () => nuxtApp._asyncData[key.value].execute(initialFetchOptions);
-  }
-  const initialFetch = createInitialFetch();
-  const asyncData = nuxtApp._asyncData[key.value];
-  asyncData._deps++;
-  const fetchOnServer = options.server !== false && nuxtApp.payload.serverRendered;
-  if (fetchOnServer && options.immediate) {
-    const promise = initialFetch();
-    if (getCurrentInstance()) {
-      onServerPrefetch(() => promise);
-    } else {
-      nuxtApp.hook("app:created", async () => {
-        await promise;
-      });
-    }
-  }
-  const asyncReturn = {
-    data: writableComputedRef(() => nuxtApp._asyncData[key.value]?.data),
-    pending: writableComputedRef(() => nuxtApp._asyncData[key.value]?.pending),
-    status: writableComputedRef(() => nuxtApp._asyncData[key.value]?.status),
-    error: writableComputedRef(() => nuxtApp._asyncData[key.value]?.error),
-    refresh: (...args2) => {
-      if (!nuxtApp._asyncData[key.value]?._init) {
-        const initialFetch2 = createInitialFetch();
-        return initialFetch2();
-      }
-      return nuxtApp._asyncData[key.value].execute(...args2);
-    },
-    execute: (...args2) => asyncReturn.refresh(...args2),
-    clear: () => {
-      const entry2 = nuxtApp._asyncData[key.value];
-      if (entry2?._abortController) {
-        try {
-          entry2._abortController.abort(new DOMException("AsyncData aborted by user.", "AbortError"));
-        } finally {
-          entry2._abortController = void 0;
-        }
-      }
-      clearNuxtDataByKey(nuxtApp, key.value);
-    }
-  };
-  const asyncDataPromise = Promise.resolve(nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn);
-  Object.assign(asyncDataPromise, asyncReturn);
-  return asyncDataPromise;
-}
-function writableComputedRef(getter) {
-  return computed({
-    get() {
-      return getter()?.value;
-    },
-    set(value) {
-      const ref2 = getter();
-      if (ref2) {
-        ref2.value = value;
-      }
-    }
-  });
-}
-function _isAutoKeyNeeded(keyOrFetcher, fetcher) {
-  if (typeof keyOrFetcher === "string") {
-    return false;
-  }
-  if (typeof keyOrFetcher === "object" && keyOrFetcher !== null) {
-    return false;
-  }
-  if (typeof keyOrFetcher === "function" && typeof fetcher === "function") {
-    return false;
-  }
-  return true;
-}
-function clearNuxtDataByKey(nuxtApp, key) {
-  if (key in nuxtApp.payload.data) {
-    nuxtApp.payload.data[key] = void 0;
-  }
-  if (key in nuxtApp.payload._errors) {
-    nuxtApp.payload._errors[key] = void 0;
-  }
-  if (nuxtApp._asyncData[key]) {
-    nuxtApp._asyncData[key].data.value = unref(nuxtApp._asyncData[key]._default());
-    nuxtApp._asyncData[key].error.value = void 0;
-    nuxtApp._asyncData[key].status.value = "idle";
-  }
-  if (key in nuxtApp._asyncDataPromises) {
-    nuxtApp._asyncDataPromises[key] = void 0;
-  }
-}
-function pick(obj, keys) {
-  const newObj = {};
-  for (const key of keys) {
-    newObj[key] = obj[key];
-  }
-  return newObj;
-}
-function createAsyncData(nuxtApp, key, _handler, options, initialCachedData) {
-  nuxtApp.payload._errors[key] ??= void 0;
-  const hasCustomGetCachedData = options.getCachedData !== getDefaultCachedData;
-  const handler = _handler ;
-  const _ref = options.deep ? ref : shallowRef;
-  const hasCachedData = initialCachedData !== void 0;
-  const unsubRefreshAsyncData = nuxtApp.hook("app:data:refresh", async (keys) => {
-    if (!keys || keys.includes(key)) {
-      await asyncData.execute({ cause: "refresh:hook" });
-    }
-  });
-  const asyncData = {
-    data: _ref(hasCachedData ? initialCachedData : options.default()),
-    pending: computed(() => asyncData.status.value === "pending"),
-    error: toRef(nuxtApp.payload._errors, key),
-    status: shallowRef("idle"),
-    execute: (...args) => {
-      const [_opts, newValue = void 0] = args;
-      const opts = _opts && newValue === void 0 && typeof _opts === "object" ? _opts : {};
-      if (nuxtApp._asyncDataPromises[key]) {
-        if ((opts.dedupe ?? options.dedupe) === "defer") {
-          return nuxtApp._asyncDataPromises[key];
-        }
-      }
-      {
-        const cachedData = "cachedData" in opts ? opts.cachedData : options.getCachedData(key, nuxtApp, { cause: opts.cause ?? "refresh:manual" });
-        if (cachedData !== void 0) {
-          nuxtApp.payload.data[key] = asyncData.data.value = cachedData;
-          asyncData.error.value = void 0;
-          asyncData.status.value = "success";
-          return Promise.resolve(cachedData);
-        }
-      }
-      if (asyncData._abortController) {
-        asyncData._abortController.abort(new DOMException("AsyncData request cancelled by deduplication", "AbortError"));
-      }
-      asyncData._abortController = new AbortController();
-      asyncData.status.value = "pending";
-      const cleanupController = new AbortController();
-      const promise = new Promise(
-        (resolve, reject) => {
-          try {
-            const timeout = opts.timeout ?? options.timeout;
-            const mergedSignal = mergeAbortSignals([asyncData._abortController?.signal, opts?.signal], cleanupController.signal, timeout);
-            if (mergedSignal.aborted) {
-              const reason = mergedSignal.reason;
-              reject(reason instanceof Error ? reason : new DOMException(String(reason ?? "Aborted"), "AbortError"));
-              return;
-            }
-            mergedSignal.addEventListener("abort", () => {
-              const reason = mergedSignal.reason;
-              reject(reason instanceof Error ? reason : new DOMException(String(reason ?? "Aborted"), "AbortError"));
-            }, { once: true, signal: cleanupController.signal });
-            return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject);
-          } catch (err) {
-            reject(err);
-          }
-        }
-      ).then(async (_result) => {
-        let result = _result;
-        if (options.transform) {
-          result = await options.transform(_result);
-        }
-        if (options.pick) {
-          result = pick(result, options.pick);
-        }
-        nuxtApp.payload.data[key] = result;
-        asyncData.data.value = result;
-        asyncData.error.value = void 0;
-        asyncData.status.value = "success";
-      }).catch((error) => {
-        if (nuxtApp._asyncDataPromises[key] && nuxtApp._asyncDataPromises[key] !== promise) {
-          return nuxtApp._asyncDataPromises[key];
-        }
-        if (asyncData._abortController?.signal.aborted) {
-          return nuxtApp._asyncDataPromises[key];
-        }
-        if (typeof DOMException !== "undefined" && error instanceof DOMException && error.name === "AbortError") {
-          asyncData.status.value = "idle";
-          return nuxtApp._asyncDataPromises[key];
-        }
-        asyncData.error.value = createError(error);
-        asyncData.data.value = unref(options.default());
-        asyncData.status.value = "error";
-      }).finally(() => {
-        cleanupController.abort();
-        delete nuxtApp._asyncDataPromises[key];
-      });
-      nuxtApp._asyncDataPromises[key] = promise;
-      return nuxtApp._asyncDataPromises[key];
-    },
-    _execute: debounce((...args) => asyncData.execute(...args), 0, { leading: true }),
-    _default: options.default,
-    _deps: 0,
-    _init: true,
-    _hash: void 0,
-    _off: () => {
-      unsubRefreshAsyncData();
-      if (nuxtApp._asyncData[key]?._init) {
-        nuxtApp._asyncData[key]._init = false;
-      }
-      if (!hasCustomGetCachedData) {
-        nextTick(() => {
-          if (!nuxtApp._asyncData[key]?._init) {
-            clearNuxtDataByKey(nuxtApp, key);
-            asyncData.execute = () => Promise.resolve();
-          }
-        });
-      }
-    }
-  };
-  return asyncData;
-}
-const getDefault = () => void 0;
-const getDefaultCachedData = (key, nuxtApp, ctx) => {
-  if (nuxtApp.isHydrating) {
-    return nuxtApp.payload.data[key];
-  }
-  if (ctx.cause !== "refresh:manual" && ctx.cause !== "refresh:hook") {
-    return nuxtApp.static.data[key];
-  }
-};
-function mergeAbortSignals(signals, cleanupSignal, timeout) {
-  const list = signals.filter((s) => !!s);
-  if (typeof timeout === "number" && timeout >= 0) {
-    const timeoutSignal = AbortSignal.timeout?.(timeout);
-    if (timeoutSignal) {
-      list.push(timeoutSignal);
-    }
-  }
-  if (AbortSignal.any) {
-    return AbortSignal.any(list);
-  }
-  const controller = new AbortController();
-  for (const sig of list) {
-    if (sig.aborted) {
-      const reason = sig.reason ?? new DOMException("Aborted", "AbortError");
-      try {
-        controller.abort(reason);
-      } catch {
-        controller.abort();
-      }
-      return controller.signal;
-    }
-  }
-  const onAbort = () => {
-    const abortedSignal = list.find((s) => s.aborted);
-    const reason = abortedSignal?.reason ?? new DOMException("Aborted", "AbortError");
-    try {
-      controller.abort(reason);
-    } catch {
-      controller.abort();
-    }
-  };
-  for (const sig of list) {
-    sig.addEventListener?.("abort", onAbort, { once: true, signal: cleanupSignal });
-  }
-  return controller.signal;
-}
-function useFetch(request, arg1, arg2) {
-  const [opts = {}, autoKey] = typeof arg1 === "string" ? [{}, arg1] : [arg1, arg2];
-  const _request = computed(() => toValue(request));
-  const key = computed(() => toValue(opts.key) || "$f" + hash([autoKey, typeof _request.value === "string" ? _request.value : "", ...generateOptionSegments(opts)]));
-  if (!opts.baseURL && typeof _request.value === "string" && (_request.value[0] === "/" && _request.value[1] === "/")) {
-    throw new Error('[nuxt] [useFetch] the request URL must not start with "//".');
-  }
-  const {
-    server,
-    lazy,
-    default: defaultFn,
-    transform,
-    pick: pick2,
-    watch: watchSources,
-    immediate,
-    getCachedData,
-    deep,
-    dedupe,
-    timeout,
-    ...fetchOptions
-  } = opts;
-  const _fetchOptions = reactive({
-    ...fetchDefaults,
-    ...fetchOptions,
-    cache: typeof opts.cache === "boolean" ? void 0 : opts.cache
-  });
-  const _asyncDataOptions = {
-    server,
-    lazy,
-    default: defaultFn,
-    transform,
-    pick: pick2,
-    immediate,
-    getCachedData,
-    deep,
-    dedupe,
-    timeout,
-    watch: watchSources === false ? [] : [...watchSources || [], _fetchOptions]
-  };
-  const asyncData = useAsyncData(watchSources === false ? key.value : key, (_, { signal }) => {
-    let _$fetch = opts.$fetch || globalThis.$fetch;
-    if (!opts.$fetch) {
-      const isLocalFetch = typeof _request.value === "string" && _request.value[0] === "/" && (!toValue(opts.baseURL) || toValue(opts.baseURL)[0] === "/");
-      if (isLocalFetch) {
-        _$fetch = useRequestFetch();
-      }
-    }
-    return _$fetch(_request.value, { signal, ..._fetchOptions });
-  }, _asyncDataOptions);
-  return asyncData;
-}
-function generateOptionSegments(opts) {
-  const segments = [
-    toValue(opts.method)?.toUpperCase() || "GET",
-    toValue(opts.baseURL)
-  ];
-  for (const _obj of [opts.query || opts.params]) {
-    const obj = toValue(_obj);
-    if (!obj) {
-      continue;
-    }
-    const unwrapped = {};
-    for (const [key, value] of Object.entries(obj)) {
-      unwrapped[toValue(key)] = toValue(value);
-    }
-    segments.push(unwrapped);
-  }
-  if (opts.body) {
-    const value = toValue(opts.body);
-    if (!value) {
-      segments.push(hash(value));
-    } else if (value instanceof ArrayBuffer) {
-      segments.push(hash(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))));
-    } else if (value instanceof FormData) {
-      const obj = {};
-      for (const entry2 of value.entries()) {
-        const [key, val] = entry2;
-        obj[key] = val instanceof File ? val.name : val;
-      }
-      segments.push(hash(obj));
-    } else if (isPlainObject(value)) {
-      segments.push(hash(reactive(value)));
-    } else {
-      try {
-        segments.push(hash(value));
-      } catch {
-        console.warn("[useFetch] Failed to hash body", value);
-      }
-    }
-  }
-  return segments;
-}
-const __nuxt_page_meta = {
-  middleware: async () => {
-    let __temp, __restore;
-    const { data } = ([__temp, __restore] = executeAsync(() => authClient.useSession(useFetch)), __temp = await __temp, __restore(), __temp);
-    if (!data.value) return navigateTo("/login");
-  }
-};
-const _routes = [
-  {
-    name: "index",
-    path: "/",
-    component: () => import('./index-BikN3gRi.mjs')
-  },
-  {
-    name: "login",
-    path: "/login",
-    component: () => import('./login-SoEdw8eD.mjs')
-  },
-  {
-    name: "profile",
-    path: "/profile",
-    meta: __nuxt_page_meta || {},
-    component: () => import('./profile-x7foubaD.mjs')
-  },
-  {
-    name: "register",
-    path: "/register",
-    component: () => import('./register-KxoB5ZXB.mjs')
-  }
-];
 const routerOptions0 = {
   scrollBehavior(to, from, savedPosition) {
     const nuxtApp = useNuxtApp();
@@ -999,7 +596,7 @@ const globalMiddleware = [
   manifest_45route_45rule
 ];
 const namedMiddleware = {
-  auth: () => import('./auth-BIMf_7Bx.mjs')
+  auth: () => import('./auth-DqGxsO7B.mjs')
 };
 const plugin = /* @__PURE__ */ defineNuxtPlugin({
   name: "nuxt:router",
@@ -1227,6 +824,267 @@ const plugins = [
   revive_payload_server_MVtmlZaQpj6ApFmshWfUWl5PehCebzaBf2NuRMiIbms,
   components_plugin_4kY4pyzJIYX99vmMAAIorFf3CnAaptHitJgf7JxiED8
 ];
+function defaultEstimatedProgress(duration, elapsed) {
+  const completionPercentage = elapsed / duration * 100;
+  return 2 / Math.PI * 100 * Math.atan(completionPercentage / 50);
+}
+function createLoadingIndicator(opts = {}) {
+  const { duration = 2e3, throttle = 200, hideDelay = 500, resetDelay = 400 } = opts;
+  opts.estimatedProgress || defaultEstimatedProgress;
+  const nuxtApp = useNuxtApp();
+  const progress = shallowRef(0);
+  const isLoading = shallowRef(false);
+  const error = shallowRef(false);
+  const start = (opts2 = {}) => {
+    error.value = false;
+    set(0, opts2);
+  };
+  function set(at = 0, opts2 = {}) {
+    if (nuxtApp.isHydrating) {
+      return;
+    }
+    if (at >= 100) {
+      return finish({ force: opts2.force });
+    }
+    progress.value = at < 0 ? 0 : at;
+    opts2.force ? 0 : throttle;
+    {
+      isLoading.value = true;
+    }
+  }
+  function finish(opts2 = {}) {
+    progress.value = 100;
+    if (opts2.error) {
+      error.value = true;
+    }
+    if (opts2.force) {
+      progress.value = 0;
+      isLoading.value = false;
+    }
+  }
+  function clear() {
+  }
+  let _cleanup = () => {
+  };
+  return {
+    _cleanup,
+    progress: computed(() => progress.value),
+    isLoading: computed(() => isLoading.value),
+    error: computed(() => error.value),
+    start,
+    set,
+    finish,
+    clear
+  };
+}
+function useLoadingIndicator(opts = {}) {
+  const nuxtApp = useNuxtApp();
+  const indicator = nuxtApp._loadingIndicator ||= createLoadingIndicator(opts);
+  return indicator;
+}
+const __nuxt_component_0 = defineComponent({
+  name: "NuxtLoadingIndicator",
+  props: {
+    throttle: {
+      type: Number,
+      default: 200
+    },
+    duration: {
+      type: Number,
+      default: 2e3
+    },
+    hideDelay: {
+      type: Number,
+      default: 500
+    },
+    resetDelay: {
+      type: Number,
+      default: 400
+    },
+    height: {
+      type: Number,
+      default: 3
+    },
+    color: {
+      type: [String, Boolean],
+      default: "repeating-linear-gradient(to right,#00dc82 0%,#34cdfe 50%,#0047e1 100%)"
+    },
+    errorColor: {
+      type: String,
+      default: "repeating-linear-gradient(to right,#f87171 0%,#ef4444 100%)"
+    },
+    estimatedProgress: {
+      type: Function,
+      required: false
+    }
+  },
+  setup(props, { slots, expose }) {
+    const { progress, isLoading, error, start, finish, clear } = useLoadingIndicator({
+      duration: props.duration,
+      throttle: props.throttle,
+      hideDelay: props.hideDelay,
+      resetDelay: props.resetDelay,
+      estimatedProgress: props.estimatedProgress
+    });
+    expose({
+      progress,
+      isLoading,
+      error,
+      start,
+      finish,
+      clear
+    });
+    return () => h("div", {
+      class: "nuxt-loading-indicator",
+      style: {
+        position: "fixed",
+        top: 0,
+        right: 0,
+        left: 0,
+        pointerEvents: "none",
+        width: "auto",
+        height: `${props.height}px`,
+        opacity: isLoading.value ? 1 : 0,
+        background: error.value ? props.errorColor : props.color || void 0,
+        backgroundSize: `${progress.value > 0 ? 100 / progress.value * 100 : 0}% auto`,
+        transform: `scaleX(${progress.value}%)`,
+        transformOrigin: "left",
+        transition: "transform 0.1s, height 0.4s, opacity 0.4s",
+        zIndex: 999999
+      }
+    }, slots);
+  }
+});
+const layouts = {
+  default: defineAsyncComponent(() => import('./default-IKH7A6Us.mjs').then((m) => m.default || m))
+};
+const LayoutLoader = defineComponent({
+  name: "LayoutLoader",
+  inheritAttrs: false,
+  props: {
+    name: String,
+    layoutProps: Object
+  },
+  setup(props, context) {
+    return () => h(layouts[props.name], props.layoutProps, context.slots);
+  }
+});
+const nuxtLayoutProps = {
+  name: {
+    type: [String, Boolean, Object],
+    default: null
+  },
+  fallback: {
+    type: [String, Object],
+    default: null
+  }
+};
+const __nuxt_component_1 = defineComponent({
+  name: "NuxtLayout",
+  inheritAttrs: false,
+  props: nuxtLayoutProps,
+  setup(props, context) {
+    const nuxtApp = useNuxtApp();
+    const injectedRoute = inject(PageRouteSymbol);
+    const shouldUseEagerRoute = !injectedRoute || injectedRoute === useRoute();
+    const route = shouldUseEagerRoute ? useRoute$1() : injectedRoute;
+    const layout = computed(() => {
+      let layout2 = unref(props.name) ?? route?.meta.layout ?? "default";
+      if (layout2 && !(layout2 in layouts)) {
+        if (props.fallback) {
+          layout2 = unref(props.fallback);
+        }
+      }
+      return layout2;
+    });
+    const layoutRef = shallowRef();
+    context.expose({ layoutRef });
+    const done = nuxtApp.deferHydration();
+    let lastLayout;
+    return () => {
+      const hasLayout = layout.value && layout.value in layouts;
+      const transitionProps = route?.meta.layoutTransition ?? appLayoutTransition;
+      const previouslyRenderedLayout = lastLayout;
+      lastLayout = layout.value;
+      return _wrapInTransition(hasLayout && transitionProps, {
+        default: () => h(Suspense, { suspensible: true, onResolve: () => {
+          nextTick(done);
+        } }, {
+          default: () => h(
+            LayoutProvider,
+            {
+              layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
+              key: layout.value || void 0,
+              name: layout.value,
+              shouldProvide: !props.name,
+              isRenderingNewLayout: (name) => {
+                return name !== previouslyRenderedLayout && name === layout.value;
+              },
+              hasTransition: !!transitionProps
+            },
+            context.slots
+          )
+        })
+      }).default();
+    };
+  }
+});
+const LayoutProvider = defineComponent({
+  name: "NuxtLayoutProvider",
+  inheritAttrs: false,
+  props: {
+    name: {
+      type: [String, Boolean]
+    },
+    layoutProps: {
+      type: Object
+    },
+    hasTransition: {
+      type: Boolean
+    },
+    shouldProvide: {
+      type: Boolean
+    },
+    isRenderingNewLayout: {
+      type: Function,
+      required: true
+    }
+  },
+  setup(props, context) {
+    const name = props.name;
+    if (props.shouldProvide) {
+      provide(LayoutMetaSymbol, {
+        isCurrent: (route) => name === (route.meta.layout ?? "default")
+      });
+    }
+    const injectedRoute = inject(PageRouteSymbol);
+    const isNotWithinNuxtPage = injectedRoute && injectedRoute === useRoute();
+    if (isNotWithinNuxtPage) {
+      const vueRouterRoute = useRoute$1();
+      const reactiveChildRoute = {};
+      for (const _key in vueRouterRoute) {
+        const key = _key;
+        Object.defineProperty(reactiveChildRoute, key, {
+          enumerable: true,
+          get: () => {
+            return props.isRenderingNewLayout(props.name) ? vueRouterRoute[key] : injectedRoute[key];
+          }
+        });
+      }
+      provide(PageRouteSymbol, shallowReactive(reactiveChildRoute));
+    }
+    return () => {
+      if (!name || typeof name === "string" && !(name in layouts)) {
+        return context.slots.default?.();
+      }
+      return h(
+        LayoutLoader,
+        { key: name, layoutProps: props.layoutProps, name },
+        context.slots
+      );
+    };
+  }
+});
 const defineRouteProvider = (name = "RouteProvider") => defineComponent({
   name,
   props: {
@@ -1259,7 +1117,7 @@ const defineRouteProvider = (name = "RouteProvider") => defineComponent({
   }
 });
 const RouteProvider = defineRouteProvider();
-const __nuxt_component_0 = defineComponent({
+const __nuxt_component_2 = defineComponent({
   name: "NuxtPage",
   inheritAttrs: false,
   props: {
@@ -1319,9 +1177,23 @@ const _export_sfc = (sfc, props) => {
 };
 const _sfc_main$2 = {};
 function _sfc_ssrRender(_ctx, _push, _parent, _attrs) {
-  const _component_NuxtPage = __nuxt_component_0;
+  const _component_NuxtLoadingIndicator = __nuxt_component_0;
+  const _component_NuxtLayout = __nuxt_component_1;
+  const _component_NuxtPage = __nuxt_component_2;
   _push(`<div${ssrRenderAttrs(_attrs)}>`);
-  _push(ssrRenderComponent(_component_NuxtPage, null, null, _parent));
+  _push(ssrRenderComponent(_component_NuxtLoadingIndicator, null, null, _parent));
+  _push(ssrRenderComponent(_component_NuxtLayout, null, {
+    default: withCtx((_, _push2, _parent2, _scopeId) => {
+      if (_push2) {
+        _push2(ssrRenderComponent(_component_NuxtPage, null, null, _parent2, _scopeId));
+      } else {
+        return [
+          createVNode(_component_NuxtPage)
+        ];
+      }
+    }),
+    _: 1
+  }, _parent));
   _push(`</div>`);
 }
 const _sfc_setup$2 = _sfc_main$2.setup;
@@ -1345,8 +1217,8 @@ const _sfc_main$1 = {
     const statusMessage = _error.statusMessage ?? (is404 ? "Page Not Found" : "Internal Server Error");
     const description = _error.message || _error.toString();
     const stack = void 0;
-    const _Error404 = defineAsyncComponent(() => import('./error-404-K3vyeQCP.mjs'));
-    const _Error = defineAsyncComponent(() => import('./error-500-DFV_0I6L.mjs'));
+    const _Error404 = defineAsyncComponent(() => import('./error-404-D4RHvdPp.mjs'));
+    const _Error = defineAsyncComponent(() => import('./error-500-BXFyrQGJ.mjs'));
     const ErrorTemplate = is404 ? _Error404 : _Error;
     return (_ctx, _push, _parent, _attrs) => {
       _push(ssrRenderComponent(unref(ErrorTemplate), mergeProps({ statusCode: unref(statusCode), statusMessage: unref(statusMessage), description: unref(description), stack: unref(stack) }, _attrs), null, _parent));
@@ -1427,5 +1299,5 @@ let entry;
 }
 const entry_default = (ssrContext) => entry(ssrContext);
 
-export { _export_sfc as _, authClient as a, useFetch as b, useRequestHeaders as c, useRouter as d, entry_default as default, useRuntimeConfig as e, nuxtLinkDefaults as f, defineNuxtRouteMiddleware as g, navigateTo as n, resolveRouteObject as r, useNuxtApp as u };
+export { _export_sfc as _, authClient as a, useRequestHeaders as b, useRequestFetch as c, defineNuxtRouteMiddleware as d, entry_default as default, useRouter as e, fetchDefaults as f, useRuntimeConfig as g, nuxtLinkDefaults as h, asyncDataDefaults as i, createError as j, navigateTo as n, resolveRouteObject as r, useNuxtApp as u };
 //# sourceMappingURL=server.mjs.map
