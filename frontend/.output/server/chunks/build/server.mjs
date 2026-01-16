@@ -459,23 +459,23 @@ const _routes = [
   {
     name: "index",
     path: "/",
-    component: () => import('./index-BwBGxOqy.mjs')
+    component: () => import('./index-cMHbI5_i.mjs')
   },
   {
     name: "login",
     path: "/login",
-    component: () => import('./login-DFGxMa5H.mjs')
+    component: () => import('./login-D96iY8w9.mjs')
   },
   {
     name: "profile",
     path: "/profile",
     meta: __nuxt_page_meta || {},
-    component: () => import('./profile-BbeDwCcZ.mjs')
+    component: () => import('./profile-Dif-Ohmp.mjs')
   },
   {
     name: "register",
     path: "/register",
-    component: () => import('./register-DaeaA223.mjs')
+    component: () => import('./register-B_r2Gqeh.mjs')
   }
 ];
 const _wrapInTransition = (props, children) => {
@@ -596,7 +596,7 @@ const globalMiddleware = [
   manifest_45route_45rule
 ];
 const namedMiddleware = {
-  auth: () => import('./auth-DqGxsO7B.mjs')
+  auth: () => import('./auth-CkYLlWm0.mjs')
 };
 const plugin = /* @__PURE__ */ defineNuxtPlugin({
   name: "nuxt:router",
@@ -956,7 +956,7 @@ const __nuxt_component_0 = defineComponent({
   }
 });
 const layouts = {
-  default: defineAsyncComponent(() => import('./default-IKH7A6Us.mjs').then((m) => m.default || m))
+  default: defineAsyncComponent(() => import('./default-2sfDQei1.mjs').then((m) => m.default || m))
 };
 const LayoutLoader = defineComponent({
   name: "LayoutLoader",
@@ -1217,7 +1217,7 @@ const _sfc_main$1 = {
     const statusMessage = _error.statusMessage ?? (is404 ? "Page Not Found" : "Internal Server Error");
     const description = _error.message || _error.toString();
     const stack = void 0;
-    const _Error404 = defineAsyncComponent(() => import('./error-404-D4RHvdPp.mjs'));
+    const _Error404 = defineAsyncComponent(() => import('./error-404-CHbznuJB.mjs'));
     const _Error = defineAsyncComponent(() => import('./error-500-BXFyrQGJ.mjs'));
     const ErrorTemplate = is404 ? _Error404 : _Error;
     return (_ctx, _push, _parent, _attrs) => {
@@ -1299,5 +1299,5 @@ let entry;
 }
 const entry_default = (ssrContext) => entry(ssrContext);
 
-export { _export_sfc as _, authClient as a, useRequestHeaders as b, useRequestFetch as c, defineNuxtRouteMiddleware as d, entry_default as default, useRouter as e, fetchDefaults as f, useRuntimeConfig as g, nuxtLinkDefaults as h, asyncDataDefaults as i, createError as j, navigateTo as n, resolveRouteObject as r, useNuxtApp as u };
+export { _export_sfc as _, authClient as a, useRequestHeaders as b, useRouter as c, defineNuxtRouteMiddleware as d, entry_default as default, useRuntimeConfig as e, nuxtLinkDefaults as f, asyncDataDefaults as g, createError as h, fetchDefaults as i, useRequestFetch as j, navigateTo as n, resolveRouteObject as r, useNuxtApp as u };
 //# sourceMappingURL=server.mjs.map

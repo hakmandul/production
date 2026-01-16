@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { authClient } from '~/lib/auth-client'
 
-// Получаем сессию. Используем useAsyncData для SSR совместимости (чтобы не моргало при F5)
-const { data: session } = await useAsyncData('header-session', async () => {
-    const { data } = await authClient.getSession({
-        fetchOptions: {
-            headers: import.meta.server ? useRequestHeaders(['cookie']) : {}
-        }
-    })
-    return data
+// БЫЛО (Проблема: кеширует и не обновляется):
+// const { data: session } = await useAsyncData(...) 
+
+// СТАЛО (Решение: Реактивный хук, который следит за изменениями):
+// Мы передаем useFetch для поддержки SSR, и заголовки для кук
+const { data: session } = authClient.useSession(useFetch, {
+    fetchOptions: {
+        headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined
+    }
 })
 </script>
 
@@ -27,9 +28,9 @@ const { data: session } = await useAsyncData('header-session', async () => {
         <!-- Правая часть: Меню -->
         <div class="flex items-center space-x-4">
           
-          <!-- Если АВТОРИЗОВАН: Показываем аватарку -->
+          <!-- Если АВТОРИЗОВАН -->
+          <!-- Добавляем v-if="session", чтобы убедиться что данные есть -->
           <div v-if="session" class="flex items-center gap-4">
-             <!-- Ссылка на профиль -->
              <NuxtLink to="/profile" class="flex items-center gap-2 group">
                 <span class="hidden sm:block text-sm font-medium text-gray-700 group-hover:text-blue-600">
                   {{ session.user.name }}
@@ -41,25 +42,20 @@ const { data: session } = await useAsyncData('header-session', async () => {
                   :src="session.user.image"
                   alt="Avatar"
                 />
+                <!-- Безопасное отображение буквы -->
                 <div v-else class="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold group-hover:ring-2 group-hover:ring-blue-500 transition">
-                    {{ session.user.name?.charAt(0)?.toUpperCase() ?? '?' }}
+                   {{ session.user.name?.charAt(0)?.toUpperCase() ?? 'U' }}
                 </div>
              </NuxtLink>
           </div>
 
-          <!-- Если ГОСТЬ: Показываем кнопки -->
+          <!-- Если ГОСТЬ -->
           <div v-else class="flex items-center gap-3">
-            <NuxtLink 
-              to="/login" 
-              class="text-gray-600 hover:text-gray-900 font-medium text-sm transition"
-            >
+            <NuxtLink to="/login" class="text-gray-600 hover:text-gray-900 font-medium text-sm transition">
               Войти
             </NuxtLink>
             
-            <NuxtLink 
-              to="/register" 
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm"
-            >
+            <NuxtLink to="/register" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
               Регистрация
             </NuxtLink>
           </div>
