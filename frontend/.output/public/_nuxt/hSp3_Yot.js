@@ -1,0 +1,1 @@
+import{B as i,C as o,k as n,z as r}from"./GKt4P97B.js";import{u}from"./_XCtovMR.js";const d=i(async(s,c)=>{let e,t;if(["/login","/register","/"].includes(s.path))return;const{data:a}=([e,t]=o(()=>n.useSession(u)),e=await e,t(),e);if(!a.value)return r("/login")});export{d as default};

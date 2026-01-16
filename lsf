@@ -1,0 +1,31 @@
+module.exports = {
+  apps: [
+    // ==================================
+    // 1. FRONTEND (Nuxt 4)
+    // ==================================
+    {
+      name: "frontend_bun",
+      // Заходим в папку фронтенда
+      cwd: "./frontend",
+      // Путь к файлу запуска (относительно папки frontend!)
+      script: "./.output/server/index.mjs",
+      interpreter: "/home/ubuntu/.bun/bin/bun",
+      instances: 1,
+      autorestart: true,
+    },
+
+    // ==================================
+    // 2. BACKEND (Hono API)
+    // ==================================
+    {
+      name: "backend_bun",
+      // Заходим в папку бэкенда (чтобы работал .env и пути к файлам)
+      cwd: "./backend",
+      // Путь к файлу запуска (относительно папки backend!)
+      script: "./src/index.ts",
+      interpreter: "/home/ubuntu/.bun/bin/bun",
+      instances: 1,
+      autorestart: true
+    }
+  ]
+};

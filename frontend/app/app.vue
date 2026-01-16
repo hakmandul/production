@@ -19,12 +19,12 @@ if (import.meta.server) {
 
 // --- ЧАСТЬ 2: Реактивность (Клиент) ---
 // Хук useSession сам следит за логином/логаутом
-const { data: session } = authClient.useSession()
+const session = authClient.useSession()
 
 // Как только session изменится (вход/выход), обновляем нашего глобального user
-watch(session, (newSession) => {
-    if (newSession?.user) {
-        user.value = newSession.user
+watch(() => session.value?.data, (newData) => {
+    if (newData?.user) {
+        user.value = newData.user
     } else {
         user.value = null
     }

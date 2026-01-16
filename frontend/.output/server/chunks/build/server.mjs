@@ -1212,10 +1212,10 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         user.value = data.user;
       }
     }
-    const { data: session } = authClient.useSession();
-    watch(session, (newSession) => {
-      if (newSession?.user) {
-        user.value = newSession.user;
+    const session = authClient.useSession();
+    watch(() => session.value?.data, (newData) => {
+      if (newData?.user) {
+        user.value = newData.user;
       } else {
         user.value = null;
       }
