@@ -14,7 +14,7 @@ const handleLogin = async () => {
     password: password.value,
   }, {
     onSuccess: () => {
-      router.push('/')
+      router.push('/profile')
     },
     onError: (ctx) => {
       alert(ctx.error.message) // Лучше вывести в UI, но для примера alert
