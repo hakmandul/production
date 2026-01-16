@@ -1,65 +1,48 @@
-// src/index.ts
+// index.ts
 import { Hono } from "hono";
+import { logger } from "hono/logger";
 import { cors } from "hono/cors";
-import { logger } from "hono/logger"; // <--- 1. Импорт
-import { auth } from "./lib/auth"; // Ваш файл auth.ts
+import { auth } from "./lib/auth"; // Импорт настроенного auth
 
 const app = new Hono();
-app.use(logger()); 
 
+// 1. Логгер (полезно для дебага через journalctl)
+app.use("*", logger());
 
-// ==========================================
-// 1. CORS CONFIGURATION
-// ==========================================
-// Используем функцию для origin, чтобы пускать и www, и без www
+// 2. CORS
+// Nginx обрабатывает опции, но Hono тоже должен разрешать ориджин
 app.use(
-  "/api/*",
-  cors({
-    origin: (origin) => {
-      // Список разрешенных доменов (должен совпадать с trustedOrigins в auth.ts)
-      const allowed = ["https://gocyxapik.pp.ua", "https://www.gocyxapik.pp.ua"];
-      
-      // Если origin в списке, возвращаем его, иначе null (блокируем)
-      return allowed.includes(origin) ? origin : null;
-    },
-    allowHeaders: ["Content-Type", "Authorization", "Cache-Control"], 
-    allowMethods: ["POST", "GET", "OPTIONS"],
-    exposeHeaders: ["Content-Length"],
-    maxAge: 600,
-    credentials: true, // ОБЯЗАТЕЛЬНО для работы Cross-Subdomain cookies
-  })
+    "/api/*",
+    cors({
+        origin: ["https://gocyxapik.pp.ua", "https://www.gocyxapik.pp.ua"],
+        allowHeaders: ["Content-Type", "Authorization"],
+        allowMethods: ["POST", "GET", "OPTIONS"],
+        exposeHeaders: ["Content-Length"],
+        maxAge: 600,
+        credentials: true, // ВАЖНО для кук
+    })
 );
 
-// ==========================================
-// 2. MOUNT BETTER-AUTH
-// ==========================================
-// Важно: в auth.ts убедитесь, что не переопределен basePath.
-// По умолчанию он "/api/auth", что совпадает с этим роутом.
+// 3. Подключение Better-Auth
+// Мы "слушаем" все запросы на /api/auth/* и передаем их в хендлер
 app.on(["POST", "GET"], "/api/auth/**", (c) => {
-  return auth.handler(c.req.raw);
+    return auth.handler(c.req.raw);
 });
 
-// ==========================================
-// 3. PROTECTED ROUTES
-// ==========================================
+// Пример защищенного роута
 app.get("/api/me", async (c) => {
-  const session = await auth.api.getSession({
-    headers: c.req.raw.headers,
-  });
-  
-
-  if (!session) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
-
-  return c.json({ user: session.user });
+    const session = await auth.api.getSession({
+        headers: c.req.raw.headers,
+    });
+    
+    if (!session) {
+        return c.json({ error: "Unauthorized" }, 401);
+    }
+    
+    return c.json({ user: session.user });
 });
 
-// Простой хелс-чек, чтобы видеть, что бэк жив
-app.get("/", (c) => c.text("Backend is running"));
-
-Bun.serve({
-  port: 3001, // Совпадает с upstream backend_bun в Nginx
-  fetch: app.fetch,
-});
-console.log("🚀 Backend running on http://localhost:3001");
+export default {
+    port: 3001,
+    fetch: app.fetch,
+};

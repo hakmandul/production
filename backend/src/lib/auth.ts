@@ -1,41 +1,29 @@
-// src/auth.ts
+// auth.ts
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "../db"; 
 import * as schema from "../db/schema"; 
-
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
-        provider: "pg",
-        schema: schema,
+        provider: "pg", // Или "postgres-js" в зависимости от драйвера
+        schema: {
+            // Маппинг таблиц, если названия совпадают с дефолтными better-auth, можно опустить, но лучше оставить для явности
+            user: schema.user,
+            session: schema.session,
+            account: schema.account,
+            verification: schema.verification
+        }
     }),
-    
-    // 1. TRUSTED ORIGINS
-    // Required for CORS checks to pass between your domains
-    trustedOrigins: [
-        "https://gocyxapik.pp.ua",
-        "https://www.gocyxapik.pp.ua"
-    ],
-
-    advanced: {
-        // 2. CROSS SUBDOMAIN COOKIES (Crucial for your setup)
-        // This allows the cookie set by 'api.gocyxapik.pp.ua' to be readable 
-        // by 'gocyxapik.pp.ua' (your frontend).
-        crossSubDomainCookies: {
-            enabled: true,
-            domain: "gocyxapik.pp.ua", // Set this to your ROOT domain
-        },
-
-        // 3. SECURE COOKIES
-        // Your Nginx handles SSL, but the Bun app runs on HTTP locally.
-        // This forces the 'Secure' flag on cookies so they work with HTTPS.
-        useSecureCookies: true, 
-        
-        // Optional: Custom prefix if you want cleaner cookie names
-        // cookiePrefix: "gocyxapik-auth", 
-    },
-
     emailAndPassword: {
-        enabled: true,
+        enabled: true
     },
+    // ВАЖНО: Указываем полный путь, так как Nginx проксирует /api/ -> backend
+    basePath: "/api/auth", 
+    trustedOrigins: ["https://gocyxapik.pp.ua", "https://www.gocyxapik.pp.ua"],
+    advanced: {
+        // Поскольку Nginx передает заголовки X-Forwarded-Proto, Better-Auth обычно сам понимает, 
+        // что это HTTPS, но для гарантии можно настроить куки:
+        cookiePrefix: "gocyxapik-auth", // Хорошая практика иметь уникальный префикс
+        useSecureCookies: true, // ОБЯЗАТЕЛЬНО true для продакшена (HTTPS)
+    }
 });
