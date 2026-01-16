@@ -58,7 +58,8 @@ app.get("/api/me", async (c) => {
 // Простой хелс-чек, чтобы видеть, что бэк жив
 app.get("/", (c) => c.text("Backend is running"));
 
-export default {
+Bun.serve({
   port: 3001, // Совпадает с upstream backend_bun в Nginx
   fetch: app.fetch,
-};
+});
+console.log("🚀 Backend running on http://localhost:3001");
