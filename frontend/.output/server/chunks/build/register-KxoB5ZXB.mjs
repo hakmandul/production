@@ -1,4 +1,4 @@
-import { _ as __nuxt_component_0 } from './nuxt-link-D-_bXpa6.mjs';
+import { _ as __nuxt_component_0 } from './nuxt-link-BWdYDbni.mjs';
 import { defineComponent, ref, mergeProps, unref, withCtx, createTextVNode, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderAttr, ssrInterpolate, ssrIncludeBooleanAttr, ssrRenderComponent } from 'vue/server-renderer';
 import { useRouter } from 'vue-router';
@@ -17,6 +17,9 @@ import 'vue-bundle-renderer/runtime';
 import 'unhead/server';
 import 'devalue';
 import 'unhead/utils';
+import 'better-auth/vue';
+import '@vue/shared';
+import 'perfect-debounce';
 
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "register",
@@ -57,4 +60,4 @@ _sfc_main.setup = (props, ctx) => {
 };
 
 export { _sfc_main as default };
-//# sourceMappingURL=register-CuTAgyRU.mjs.map
+//# sourceMappingURL=register-KxoB5ZXB.mjs.map

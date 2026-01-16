@@ -1,6 +1,6 @@
 import { defineComponent, shallowRef, h, resolveComponent, computed } from 'vue';
-import { x as parseQuery, k as hasProtocol, m as joinURL, y as withTrailingSlash, z as withoutTrailingSlash } from '../../index.mjs';
-import { a as useRouter, u as useNuxtApp, r as resolveRouteObject, b as useRuntimeConfig, n as navigateTo, c as nuxtLinkDefaults } from './server.mjs';
+import { y as parseQuery, m as hasProtocol, o as joinURL, z as withTrailingSlash, A as withoutTrailingSlash } from '../../index.mjs';
+import { d as useRouter, u as useNuxtApp, r as resolveRouteObject, e as useRuntimeConfig, n as navigateTo, f as nuxtLinkDefaults } from './server.mjs';
 
 const firstNonUndefined = (...args) => args.find((arg) => arg !== void 0);
 // @__NO_SIDE_EFFECTS__
@@ -283,4 +283,4 @@ function applyTrailingSlashBehavior(to, trailingSlash) {
 }
 
 export { __nuxt_component_0 as _ };
-//# sourceMappingURL=nuxt-link-D-_bXpa6.mjs.map
+//# sourceMappingURL=nuxt-link-BWdYDbni.mjs.map

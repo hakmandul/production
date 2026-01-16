@@ -1,4 +1,4 @@
-import { _ as __nuxt_component_0 } from './nuxt-link-D-_bXpa6.mjs';
+import { _ as __nuxt_component_0 } from './nuxt-link-BWdYDbni.mjs';
 import { mergeProps, withCtx, createTextVNode, toDisplayString, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrInterpolate, ssrRenderComponent } from 'vue/server-renderer';
 import { _ as _export_sfc } from './server.mjs';
@@ -18,6 +18,9 @@ import 'unhead/server';
 import 'devalue';
 import 'unhead/utils';
 import 'vue-router';
+import 'better-auth/vue';
+import '@vue/shared';
+import 'perfect-debounce';
 
 const _sfc_main = {
   __name: "error-404",
@@ -90,4 +93,4 @@ _sfc_main.setup = (props, ctx) => {
 const error404 = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-cd31e6b7"]]);
 
 export { error404 as default };
-//# sourceMappingURL=error-404-CAHa2zFq.mjs.map
+//# sourceMappingURL=error-404-K3vyeQCP.mjs.map

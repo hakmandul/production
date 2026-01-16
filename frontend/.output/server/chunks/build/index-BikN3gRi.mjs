@@ -1,7 +1,7 @@
-import { _ as __nuxt_component_0 } from './nuxt-link-D-_bXpa6.mjs';
+import { _ as __nuxt_component_0 } from './nuxt-link-BWdYDbni.mjs';
 import { defineComponent, withAsyncContext, mergeProps, unref, withCtx, createTextVNode, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderAttr, ssrInterpolate, ssrRenderComponent } from 'vue/server-renderer';
-import { a as authClient, u as useFetch } from './fetch-Ck_USP8n.mjs';
+import { a as authClient, b as useFetch } from './server.mjs';
 import { useRouter } from 'vue-router';
 import '../../index.mjs';
 import 'node:events';
@@ -10,7 +10,6 @@ import 'node:fs';
 import 'node:path';
 import 'node:crypto';
 import 'node:url';
-import './server.mjs';
 import 'node:http';
 import 'node:https';
 import '../routes/renderer.mjs';
@@ -86,4 +85,4 @@ _sfc_main.setup = (props, ctx) => {
 };
 
 export { _sfc_main as default };
-//# sourceMappingURL=index-BiezBCYb.mjs.map
+//# sourceMappingURL=index-BikN3gRi.mjs.map

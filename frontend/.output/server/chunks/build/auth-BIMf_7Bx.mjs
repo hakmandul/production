@@ -1,16 +1,12 @@
-import { p as executeAsync } from '../../index.mjs';
-import { a as authClient, u as useFetch } from './fetch-Ck_USP8n.mjs';
-import { d as defineNuxtRouteMiddleware, n as navigateTo } from './server.mjs';
+import { r as executeAsync } from '../../index.mjs';
+import { g as defineNuxtRouteMiddleware, a as authClient, b as useFetch, n as navigateTo } from './server.mjs';
 import 'node:events';
 import 'node:buffer';
 import 'node:fs';
 import 'node:path';
 import 'node:crypto';
 import 'node:url';
-import 'better-auth/vue';
 import 'vue';
-import '@vue/shared';
-import 'perfect-debounce';
 import 'node:http';
 import 'node:https';
 import '../routes/renderer.mjs';
@@ -20,6 +16,9 @@ import 'unhead/server';
 import 'devalue';
 import 'unhead/utils';
 import 'vue-router';
+import 'better-auth/vue';
+import '@vue/shared';
+import 'perfect-debounce';
 
 const auth = defineNuxtRouteMiddleware(async (to, from) => {
   let __temp, __restore;
@@ -34,4 +33,4 @@ const auth = defineNuxtRouteMiddleware(async (to, from) => {
 });
 
 export { auth as default };
-//# sourceMappingURL=auth-BI20-VX5.mjs.map
+//# sourceMappingURL=auth-BIMf_7Bx.mjs.map
