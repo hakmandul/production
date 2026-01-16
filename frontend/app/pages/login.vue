@@ -1,98 +1,72 @@
+<script setup lang="ts">
+import { authClient } from '~/lib/auth-client'
+import { useRouter } from 'vue-router'
+
+// SSR магия: передаем useFetch, чтобы сессия подтянулась на сервере
+const { data: session } = await authClient.useSession(useFetch)
+const router = useRouter()
+
+const handleLogout = async () => {
+  await authClient.signOut({
+    fetchOptions: {
+      onSuccess: () => {
+        router.push('/login')
+      }
+    }
+  })
+}
+</script>
+
 <template>
-  <div class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg border border-gray-100">
-      <h2 class="text-2xl font-bold text-center text-gray-900 mb-6">Вход в систему</h2>
+  <div class="min-h-screen bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
       
-      <form @submit.prevent="handleLogin" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input 
-            v-model="email" 
-            type="email" 
-            required
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-            placeholder="example@mail.com"
-          />
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Пароль</label>
-          <input 
-            v-model="password" 
-            type="password" 
-            required
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-            placeholder="••••••••"
-          />
+      <!-- Карточка приветствия -->
+      <div v-if="session" class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center space-x-4">
+          <!-- Аватарка или заглушка -->
+          <div v-if="session.user.image" class="shrink-0">
+             <img :src="session.user.image" class="h-16 w-16 rounded-full object-cover" alt="Avatar" />
+          </div>
+          <div v-else class="h-16 w-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
+            {{ session.user.name.charAt(0).toUpperCase() }}
+          </div>
+          
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">Привет, {{ session.user.name }}!</h1>
+            <p class="text-gray-500">{{ session.user.email }}</p>
+          </div>
         </div>
 
-        <div v-if="error" class="text-red-500 text-sm bg-red-50 p-3 rounded-lg">
-          {{ error }}
+        <div class="mt-8 border-t pt-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Данные сессии (Debug):</h3>
+          <pre class="bg-gray-800 text-green-400 p-4 rounded text-sm overflow-x-auto">{{ session }}</pre>
         </div>
 
-        <button 
-          type="submit" 
-          :disabled="isLoading"
-          class="w-full py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 transition"
-        >
-          {{ isLoading ? 'Входим...' : 'Войти' }}
-        </button>
-      </form>
-
-      <div class="mt-6 text-center text-sm text-gray-500">
-        Нет аккаунта? 
-        <NuxtLink to="/register" class="text-indigo-600 hover:underline">Зарегистрироваться</NuxtLink>
+        <div class="mt-6">
+            <button 
+              @click="handleLogout"
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+            >
+              Выйти
+            </button>
+        </div>
       </div>
+
+      <!-- Состояние для гостей -->
+      <div v-else class="text-center py-20">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Добро пожаловать</h1>
+        <p class="text-gray-600 mb-8">Для доступа к контенту необходимо авторизоваться.</p>
+        <div class="space-x-4">
+          <NuxtLink to="/login" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Войти
+          </NuxtLink>
+          <NuxtLink to="/register" class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+            Регистрация
+          </NuxtLink>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { authClient } from "~/lib/auth-client";
-
-const email = ref('');
-const password = ref('');
-const isLoading = ref(false);
-const error = ref<string | null>(null);
-const router = useRouter();
-
-const handleLogin = async () => {
-  isLoading.value = true;
-  error.value = null;
-
-  try {
-    // 1. Отправляем запрос на вход
-    const { error: authError } = await authClient.signIn.email({
-      email: email.value,
-      password: password.value,
-    });
-
-    if (authError) {
-      console.error("Ошибка входа:", authError);
-      error.value = authError.message || 'Неверный логин или пароль';
-      isLoading.value = false;
-      return;
-    }
-
-    // 2. Вход успешен (сервер ответил 200)
-    console.log("Вход успешен. Обновляем сессию...");
-
-    // 3. КРИТИЧЕСКИЙ МОМЕНТ:
-    // Принудительно запрашиваем сессию, чтобы клиент Nuxt понял, что мы вошли
-    await authClient.getSession({
-      fetchOptions: { headers: { 'Cache-Control': 'no-cache' } }
-    });
-
-    console.log("Сессия обновлена. Переходим в профиль...");
-    
-    // 4. Делаем редирект
-    await router.push('/check');
-
-  } catch (e) {
-    console.error("Неожиданная ошибка:", e);
-    error.value = "Произошла ошибка при обработке входа";
-  } finally {
-    isLoading.value = false;
-  }
-};
-</script>

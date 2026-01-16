@@ -1,11 +1,12 @@
-// lib/auth-client.ts
-import { createAuthClient } from "better-auth/vue";
+import { createAuthClient } from "better-auth/vue"
 
 export const authClient = createAuthClient({
-    // Указываем адрес твоего HONO сервера
-    baseURL: "https://api.gocyxapik.pp.ua",
-});
+    // ОЧЕНЬ ВАЖНО: Указываем внешний URL твоего API через Nginx.
+    // Твой Nginx перенаправит /api/ -> на Hono (3001)
+    baseURL: "https://gocyxapik.pp.ua/api/auth" 
+})
 
+// Экспортируем методы для удобства
 export const { 
     signIn, 
     signUp, 

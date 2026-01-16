@@ -1,60 +1,89 @@
+<script setup lang="ts">
+import { signUp } from '~/lib/auth-client'
+import { useRouter } from 'vue-router'
+
+const name = ref('')
+const email = ref('')
+const password = ref('')
+const isLoading = ref(false)
+const router = useRouter()
+
+const handleRegister = async () => {
+  isLoading.value = true
+  await signUp.email({
+    email: email.value,
+    password: password.value,
+    name: name.value,
+    image: undefined // Можно добавить загрузку аватарки позже
+  }, {
+    onRequest: () => {
+      // Можно очистить ошибки
+    },
+    onSuccess: () => {
+      router.push('/') // После регистрации кидаем на главную
+    },
+    onError: (ctx) => {
+      alert(ctx.error.message)
+      isLoading.value = false
+    }
+  })
+}
+</script>
+
 <template>
-  <div class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg border border-gray-100">
-      <h2 class="text-2xl font-bold text-center text-gray-900 mb-6">Создать аккаунт</h2>
+  <div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+      <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Регистрация</h2>
       
       <form @submit.prevent="handleRegister" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Имя</label>
-          <input v-model="form.name" type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Иван Иванов" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input v-model="form.email" type="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="example@mail.com" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Пароль</label>
-          <input v-model="form.password" type="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+          <label class="block text-sm font-medium text-gray-700">Имя</label>
+          <input 
+            v-model="name" 
+            type="text" 
+            required
+            class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Иван Иванов"
+          />
         </div>
 
-        <div v-if="error" class="text-red-500 text-sm bg-red-50 p-3 rounded-lg">{{ error }}</div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Email</label>
+          <input 
+            v-model="email" 
+            type="email" 
+            required
+            class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="you@example.com"
+          />
+        </div>
 
-        <button type="submit" :disabled="isLoading" class="w-full py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 transition">
-          {{ isLoading ? 'Регистрация...' : 'Зарегистрироваться' }}
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Пароль</label>
+          <input 
+            v-model="password" 
+            type="password" 
+            required
+            class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <button 
+          type="submit" 
+          :disabled="isLoading"
+          class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+        >
+          {{ isLoading ? 'Создаем аккаунт...' : 'Зарегистрироваться' }}
         </button>
       </form>
 
-      <div class="mt-6 text-center text-sm text-gray-500">
-        Уже есть аккаунт? <NuxtLink to="/login" class="text-indigo-600 hover:underline">Войти</NuxtLink>
-      </div>
+      <p class="mt-4 text-center text-sm text-gray-600">
+        Уже есть аккаунт? 
+        <NuxtLink to="/login" class="font-medium text-blue-600 hover:text-blue-500">
+          Войти
+        </NuxtLink>
+      </p>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { authClient } from "~/lib/auth-client";
-
-const form = reactive({ name: '', email: '', password: '' });
-const isLoading = ref(false);
-const error = ref<string | null>(null);
-const router = useRouter();
-
-const handleRegister = async () => {
-  isLoading.value = true;
-  error.value = null;
-
-  const { error: authError } = await authClient.signUp.email({
-    email: form.email,
-    password: form.password,
-    name: form.name,
-  });
-
-  if (authError) {
-    // ИСПРАВЛЕНО: Добавили запасной текст ошибки
-    error.value = authError.message || 'Ошибка при регистрации';
-    isLoading.value = false;
-  } else {
-    router.push('/profile');
-  }
-};
-</script>

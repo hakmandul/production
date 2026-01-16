@@ -1,57 +1,72 @@
+<script setup lang="ts">
+import { authClient } from '~/lib/auth-client'
+import { useRouter } from 'vue-router'
+
+// SSR магия: передаем useFetch, чтобы сессия подтянулась на сервере
+const { data: session } = await authClient.useSession(useFetch)
+const router = useRouter()
+
+const handleLogout = async () => {
+  await authClient.signOut({
+    fetchOptions: {
+      onSuccess: () => {
+        router.push('/login')
+      }
+    }
+  })
+}
+</script>
+
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-    <div class="max-w-md w-full text-center space-y-6">
-      <h1 class="text-4xl font-bold text-gray-900">Better Auth + Nuxt</h1>
-      <p class="text-gray-600">Демонстрация работы с Hono Backend</p>
-
-      <!-- ИСПРАВЛЕНО: используем isPending -->
-      <div v-if="isPending" class="text-gray-400">Загрузка...</div>
-
-      <!-- Пользователь залогинен -->
-      <div v-else-if="session" class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-        <img 
-          v-if="session.user.image" 
-          :src="session.user.image" 
-          class="w-20 h-20 rounded-full mx-auto mb-4 border-2 border-indigo-500"
-        />
-        <div v-else class="w-20 h-20 bg-indigo-100 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl">
-          👤
+  <div class="min-h-screen bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+      
+      <!-- Карточка приветствия -->
+      <div v-if="session" class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center space-x-4">
+          <!-- Аватарка или заглушка -->
+          <div v-if="session.user.image" class="shrink-0">
+             <img :src="session.user.image" class="h-16 w-16 rounded-full object-cover" alt="Avatar" />
+          </div>
+          <div v-else class="h-16 w-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
+            {{ session.user.name.charAt(0).toUpperCase() }}
+          </div>
+          
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">Привет, {{ session.user.name }}!</h1>
+            <p class="text-gray-500">{{ session.user.email }}</p>
+          </div>
         </div>
-        
-        <p class="text-xl font-semibold text-gray-800">{{ session.user.name }}</p>
-        <p class="text-sm text-gray-500 mb-6">{{ session.user.email }}</p>
-        
-        <div class="flex gap-3 justify-center">
-          <NuxtLink to="/profile" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-            Профиль
+
+        <div class="mt-8 border-t pt-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Данные сессии (Debug):</h3>
+          <pre class="bg-gray-800 text-green-400 p-4 rounded text-sm overflow-x-auto">{{ session }}</pre>
+        </div>
+
+        <div class="mt-6">
+            <button 
+              @click="handleLogout"
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+            >
+              Выйти
+            </button>
+        </div>
+      </div>
+
+      <!-- Состояние для гостей -->
+      <div v-else class="text-center py-20">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Добро пожаловать</h1>
+        <p class="text-gray-600 mb-8">Для доступа к контенту необходимо авторизоваться.</p>
+        <div class="space-x-4">
+          <NuxtLink to="/login" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Войти
           </NuxtLink>
-          <button @click="handleSignOut" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
-            Выйти
-          </button>
+          <NuxtLink to="/register" class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+            Регистрация
+          </NuxtLink>
         </div>
       </div>
 
-      <!-- Гость -->
-      <div v-else class="space-y-4">
-        <NuxtLink to="/login" class="block w-full py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">
-          Войти
-        </NuxtLink>
-        <NuxtLink to="/register" class="block w-full py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition">
-          Регистрация
-        </NuxtLink>
-      </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { authClient } from "~/lib/auth-client";
-
-// ИСПРАВЛЕНО: destructuring 'isPending' instead of 'pending'
-const { data: session, isPending } = await authClient.useSession(useFetch);
-
-const handleSignOut = async () => {
-  await authClient.signOut();
-  window.location.reload(); 
-};
-</script>
